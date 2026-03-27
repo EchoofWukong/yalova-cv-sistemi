@@ -59,12 +59,27 @@ Route::get('/admin/akademisyen-onayla/{id}', function ($id) {
 
 
 // =========================================================================
-// RENDER İÇİN ARKA KAPI (VERİTABANI KURULUMU)
+// RENDER İÇİN ARKA KAPI (CACHE TEMİZLEME + VERİTABANI KURULUMU)
 // =========================================================================
 Route::get('/veritabanini-kur', function () {
     try {
+        // 1. Önce eski hafızayı (cache) zorla temizle
+        \Illuminate\Support\Facades\Artisan::call('config:clear');
+        \Illuminate\Support\Facades\Artisan::call('cache:clear');
+        
+        // 2. Hangi veritabanına bağlandığını tespit et
+        $dbConnection = config('database.default');
+        $dbName = config('database.connections.' . $dbConnection . '.database');
+        
+        // 3. Tabloları asıl yere kur
         \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-        return '<h2 style="color:green; text-align:center; margin-top:50px;">✅ Kanka tablolar başarıyla kuruldu! DBeaver\'a gidip Refresh atabilirsin.</h2>';
+        
+        return "<div style='font-family:sans-serif; text-align:center; margin-top:50px;'>
+                    <h2 style='color:green;'>✅ Hafıza Temizlendi ve Tablolar Kuruldu!</h2>
+                    <p style='font-size: 18px;'><b>Bağlanılan Sistem:</b> <span style='color:blue;'>{$dbConnection}</span></p>
+                    <p style='font-size: 18px;'><b>Veritabanı Adı:</b> <span style='color:blue;'>{$dbName}</span></p>
+                    <p>Eğer yukarıda <b>'pgsql'</b> yazıyorsa sorun kesin çözüldü demektir. DBeaver'a gidip Refresh atabilirsin.</p>
+                </div>";
     } catch (\Exception $e) {
         return '<h2 style="color:red; text-align:center; margin-top:50px;">❌ Bir hata oluştu: ' . $e->getMessage() . '</h2>';
     }
