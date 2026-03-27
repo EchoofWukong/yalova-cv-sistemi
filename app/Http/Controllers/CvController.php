@@ -178,31 +178,30 @@ class CvController extends Controller
         return redirect()->route('dashboard')->with('success', 'CV başarıyla silindi!');
     }
     
-    public function search(Request $request)
+   public function search(Request $request)
 {
-    // JavaScript'ten gelen 'query' parametresini alıyoruz
+    // JavaScript'ten gelen arama terimini alıyoruz
     $query = $request->input('query');
 
-    // Sadece onaylı öğrencilerin CV'lerini, arama terimine göre getiriyoruz
+    // Aramayı 'users' tablosundaki 'name' sütununda yapıyoruz
     $cvs = \App\Models\Cv::with('user')
-        ->whereHas('user', function($q) {
-            $q->where('role', 'student')
-              ->where('is_approved', true); // Onaylı olmayanlar aramada çıkmaz
+        ->whereHas('user', function($q) use ($query) {
+            $q->where('role', 'student') // Sadece öğrenciler
+              ->where('is_approved', true) // Sadece onaylılar
+              ->where('name', 'LIKE', "%{$query}%"); // İsim araması burada!
         })
-        ->where('full_name', 'LIKE', "%{$query}%")
         ->get();
 
-    // JavaScript'in (Frontend) beklediği formatta veriyi hazırlıyoruz
+    // JavaScript'in (Frontend) tam olarak beklediği 'ad_soyad' ve 'sablon' verilerini hazırlıyoruz
     $results = $cvs->map(function($cv) {
         return [
             'id' => $cv->id,
-            'ad_soyad' => $cv->full_name, // JS 'ad_soyad' bekliyor
-            'sablon' => $cv->template_name ?? 'modern', // JS 'sablon' bekliyor
+            'ad_soyad' => $cv->user->name, // İsmi kullanıcı tablosundan çekiyoruz
+            'sablon' => $cv->template_name ?? 'modern', // Eğer tabloda 'sablon' varsa onu yaz kanka
             'updated_at' => $cv->updated_at->toIso8601String(),
         ];
     });
 
-    // Veriyi JSON olarak fırlatıyoruz
     return response()->json($results);
 }
 }
