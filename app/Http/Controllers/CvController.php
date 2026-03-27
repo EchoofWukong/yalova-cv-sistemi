@@ -180,34 +180,36 @@ class CvController extends Controller
     
    public function search(Request $request)
 {
-    // JavaScript'ten gelen harfleri alıyoruz
-    $query = $request->input('query');
+    // EĞER AJAX/FETCH İLE (YANİ ARAMA KUTUSUNDAN) GELMİŞSE SONUÇLARI DÖNDÜR
+    if ($request->ajax() || $request->wantsJson() || $request->has('query')) {
+        
+        $query = $request->input('query');
 
-    // Eğer arama kutusu boşsa veya 2 harften azsa boş döndür
-    if (!$query || strlen($query) < 2) {
-        return response()->json([]);
+        if (!$query || strlen($query) < 2) {
+            return response()->json([]);
+        }
+
+        $cvs = \App\Models\Cv::with('user')
+            ->whereHas('user', function($q) use ($query) {
+                $q->where('role', 'student')
+                  ->where('is_approved', true)
+                  ->whereRaw('LOWER(name) LIKE ?', ['%' . mb_strtolower(trim($query), 'UTF-8') . '%']);
+            })
+            ->get();
+
+        $results = $cvs->map(function($cv) {
+            return [
+                'id' => $cv->id,
+                'ad_soyad' => $cv->user->name ?? 'İsimsiz', 
+                'sablon' => $cv->sablon ?? 'modern', 
+                'updated_at' => $cv->updated_at ? $cv->updated_at->toIso8601String() : null,
+            ];
+        });
+
+        return response()->json($results);
     }
 
-    // RENDER (POSTGRESQL) İÇİN KÜÇÜK HARF DUYARLILIĞI ÇÖZÜMÜ
-    $cvs = \App\Models\Cv::with('user')
-        ->whereHas('user', function($q) use ($query) {
-            $q->where('role', 'student') // Sadece öğrenciler
-              ->where('is_approved', true) // Sadece onaylılar
-              // İŞTE BÜYÜ/KÜÇÜK HARF SORUNUNU ÇÖZEN O SİHİRLİ SATIR:
-              ->whereRaw('LOWER(name) LIKE ?', ['%' . mb_strtolower(trim($query), 'UTF-8') . '%']);
-        })
-        ->get();
-
-    // JavaScript'in (Frontend) beklediği formata çeviriyoruz
-    $results = $cvs->map(function($cv) {
-        return [
-            'id' => $cv->id,
-            'ad_soyad' => $cv->user->name ?? 'İsimsiz', 
-            'sablon' => $cv->sablon ?? 'modern', 
-            'updated_at' => $cv->updated_at ? $cv->updated_at->toIso8601String() : null,
-        ];
-    });
-
-    return response()->json($results);
+    // EĞER SAYFAYA DİREKT GİRMİŞSE TASARIMI (HTML) GÖSTER
+    return view('cv.search'); // Senin o güzel tasarımının olduğu dosya
 }
 }
