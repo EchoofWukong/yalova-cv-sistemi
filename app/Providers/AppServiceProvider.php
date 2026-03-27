@@ -23,12 +23,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // BREVO API TRANSPORTUNU BURADA KAYDEDİYORUZ
-        Mail::extend('sendinblue', function (array $config) {
-            return (new SendinblueTransportFactory)->create(
-                new Dsn(
+        \Illuminate\Support\Facades\Mail::extend('sendinblue', function (array $config) {
+            return (new \Symfony\Component\Mailer\Bridge\Sendinblue\Transport\SendinblueTransportFactory)->create(
+                new \Symfony\Component\Mailer\Transport\Dsn(
                     'sendinblue+api',
                     'default',
-                    config('mail.mailers.brevo.password') // Render'daki API Key'i kullanır
+                    env('MAIL_PASSWORD') // Render'daki o upuzun xkeysib... kodunu okur
                 )
             );
         });
