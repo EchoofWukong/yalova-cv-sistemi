@@ -37,4 +37,4 @@ RUN sed -ri -e 's!/var/www/!/var/www/html/public!g' /etc/apache2/apache2.conf /e
 EXPOSE 80
 
 # Migrations ve Apache start
-CMD php artisan migrate --force && apache2-foreground
+CMD php artisan config:clear && php artisan view:clear && php artisan migrate --force && apache2-foreground
