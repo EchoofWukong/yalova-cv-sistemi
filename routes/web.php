@@ -5,6 +5,7 @@ use App\Http\Controllers\CvController;
 use Illuminate\Support\Facades\Route;
 use App\Models\Cv;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\URL;
 
 Route::redirect('/', '/login');
 
@@ -43,7 +44,6 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 
-use Illuminate\Support\Facades\URL;
 
 // AKADEMİSYEN ONAYLAMA ROTASI
 Route::get('/admin/akademisyen-onayla/{id}', function ($id) {
@@ -56,3 +56,16 @@ Route::get('/admin/akademisyen-onayla/{id}', function ($id) {
                 <a href='".url('/login')."'>Sisteme Git</a>
             </div>";
 })->name('admin.teacher.approve')->middleware('signed');
+
+
+// =========================================================================
+// RENDER İÇİN ARKA KAPI (VERİTABANI KURULUMU)
+// =========================================================================
+Route::get('/veritabanini-kur', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        return '<h2 style="color:green; text-align:center; margin-top:50px;">✅ Kanka tablolar başarıyla kuruldu! DBeaver\'a gidip Refresh atabilirsin.</h2>';
+    } catch (\Exception $e) {
+        return '<h2 style="color:red; text-align:center; margin-top:50px;">❌ Bir hata oluştu: ' . $e->getMessage() . '</h2>';
+    }
+});
