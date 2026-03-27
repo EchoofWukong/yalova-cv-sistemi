@@ -3,23 +3,26 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Auth\Notifications\VerifyEmail;
-use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
+    /**
+     * Register any application services.
+     */
     public function register(): void
     {
         //
     }
 
+    /**
+     * Bootstrap any application services.
+     */
     public function boot(): void
     {
-        // Kendi tasarımımızı (emails.dogrulama) kullanmasını söylüyoruz
-        VerifyEmail::toMailUsing(function (object $notifiable, string $url) {
-            return (new MailMessage)
-                ->subject('Yalova Üni. Öğrenci Kayıt Doğrulaması')
-                ->view('emails.dogrulama', ['url' => $url]);
-        });
+        // LARAVEL'İ ZORLA HTTPS YAP (GÜVENLİK UYARISINI ÇÖZER)
+        if (config('app.env') !== 'local') {
+            URL::forceScheme('https');
+        }
     }
 }
