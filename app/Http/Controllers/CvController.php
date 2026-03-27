@@ -180,28 +180,32 @@ class CvController extends Controller
     
    public function search(Request $request)
 {
-    // JavaScript'ten gelen arama terimini alıyoruz
+    // 1. JavaScript'ten gelen arama terimini alıyoruz (query)
     $query = $request->input('query');
 
-    // Aramayı 'users' tablosundaki 'name' sütununda yapıyoruz
+    // 2. Aramayı 'users' tablosundaki 'name' üzerinden yapıyoruz
     $cvs = \App\Models\Cv::with('user')
         ->whereHas('user', function($q) use ($query) {
             $q->where('role', 'student') // Sadece öğrenciler
-              ->where('is_approved', true) // Sadece onaylılar
-              ->where('name', 'LIKE', "%{$query}%"); // İsim araması burada!
+              ->where('is_approved', true) // Senin onay verdiğin (1 olan) öğrenciler
+              ->where('name', 'LIKE', "%{$query}%"); // İsim araması burada
         })
         ->get();
 
-    // JavaScript'in (Frontend) tam olarak beklediği 'ad_soyad' ve 'sablon' verilerini hazırlıyoruz
+    // 3. JavaScript'in (Frontend) beklediği formatta paketliyoruz
     $results = $cvs->map(function($cv) {
         return [
             'id' => $cv->id,
-            'ad_soyad' => $cv->user->name, // İsmi kullanıcı tablosundan çekiyoruz
-            'sablon' => $cv->template_name ?? 'modern', // Eğer tabloda 'sablon' varsa onu yaz kanka
+            'ad_soyad' => $cv->user->name, // İsmi kullanıcı tablosundan çektik
+            
+            // SENİN SÜTUN ADIN 'sablon' OLDUĞU İÇİN BURAYI DÜZELTTİM:
+            'sablon' => $cv->sablon ?? 'modern', 
+            
             'updated_at' => $cv->updated_at->toIso8601String(),
         ];
     });
 
+    // 4. Veriyi JSON olarak fırlatıyoruz
     return response()->json($results);
 }
 }
