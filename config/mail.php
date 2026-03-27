@@ -37,16 +37,9 @@ return [
 
     'mailers' => [
 
-        // BREVO SMTP - EN SAĞLAM VE GARANTİ YÖNTEM
+        // BREVO API MODU - RENDER'IN ENGELLEYEMEYECEĞİ TEK YOL
         'brevo' => [
-            'transport' => 'smtp',
-            'host' => 'smtp-relay.sendinblue.com',
-            'port' => 587,
-            'encryption' => 'tls',
-            'username' => env('MAIL_FROM_ADDRESS'),
-            'password' => env('MAIL_PASSWORD'),
-            'timeout' => null,
-            'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
+            'transport' => 'sendinblue',
         ],
 
         'smtp' => [
