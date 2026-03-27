@@ -179,29 +179,30 @@ class CvController extends Controller
     }
     
     public function search(Request $request)
-    {
-        $query = $request->input('query');
-        
-        if ($request->ajax()) {
-            $sonuclar = [];
-            if ($query) {
-                $lower = mb_strtolower($query, 'UTF-8');
-                $upper = mb_strtoupper($query, 'UTF-8');
-                $title = mb_convert_case($query, MB_CASE_TITLE, 'UTF-8');
+{
+    // JavaScript'ten gelen 'query' parametresini alıyoruz
+    $query = $request->input('query');
 
-                $sonuclar = Cv::where(function($q) use ($query, $lower, $upper, $title) {
-                                $q->where('ad_soyad', 'LIKE', "%{$query}%")
-                                  ->orWhere('ad_soyad', 'LIKE', "%{$lower}%")
-                                  ->orWhere('ad_soyad', 'LIKE', "%{$upper}%")
-                                  ->orWhere('ad_soyad', 'LIKE', "%{$title}%")
-                                  ->orWhere('eposta', 'LIKE', "%{$lower}%");
-                            })
-                            ->where('user_id', '!=', Auth::id())
-                            ->get();
-            }
-            return response()->json($sonuclar);
-        }
+    // Sadece onaylı öğrencilerin CV'lerini, arama terimine göre getiriyoruz
+    $cvs = \App\Models\Cv::with('user')
+        ->whereHas('user', function($q) {
+            $q->where('role', 'student')
+              ->where('is_approved', true); // Onaylı olmayanlar aramada çıkmaz
+        })
+        ->where('full_name', 'LIKE', "%{$query}%")
+        ->get();
 
-        return view('cv.search', compact('query'));
-    }
+    // JavaScript'in (Frontend) beklediği formatta veriyi hazırlıyoruz
+    $results = $cvs->map(function($cv) {
+        return [
+            'id' => $cv->id,
+            'ad_soyad' => $cv->full_name, // JS 'ad_soyad' bekliyor
+            'sablon' => $cv->template_name ?? 'modern', // JS 'sablon' bekliyor
+            'updated_at' => $cv->updated_at->toIso8601String(),
+        ];
+    });
+
+    // Veriyi JSON olarak fırlatıyoruz
+    return response()->json($results);
+}
 }
