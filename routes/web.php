@@ -8,6 +8,20 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\URL;
 
 Route::redirect('/', '/login');
+// AKADEMİSYEN ONAYLAMA ROTASI
+Route::get('/admin/akademisyen-onayla/{id}', function ($id) {
+    $user = \App\Models\User::findOrFail($id);
+    
+    // Değeri zorla true yap ve kaydet
+    $user->is_approved = true;
+    $user->save(); 
+    
+    return "<div style='font-family:sans-serif; text-align:center; margin-top:50px;'>
+                <h2 style='color: #2d3748;'>✅ İşlem Başarılı!</h2>
+                <p><b>{$user->name}</b> isimli akademisyen onaylandı. Artık sisteme giriş yapabilir.</p>
+                <a href='".url('/login')."' style='padding:10px 20px; background:#2d3748; color:white; text-decoration:none; border-radius:5px;'>Sisteme Git</a>
+            </div>";
+})->name('admin.teacher.approve')->middleware('signed');
 
 // GİRİŞ YAPINCA AÇILAN PANEL
 Route::get('/anasayfa', function () {

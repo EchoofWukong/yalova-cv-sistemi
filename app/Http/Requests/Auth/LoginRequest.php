@@ -56,6 +56,13 @@ class LoginRequest extends FormRequest
                 'email' => 'Hesabınız henüz onaylanmadı. Lütfen Gökhan Bey\'in onayını bekleyin.',
             ]);
         }
+        $user = Auth::user();
+    if (!$user->is_approved) {
+        Auth::logout(); // Girişi iptal et
+        throw ValidationException::withMessages([
+            'email' => 'Hesabınız henüz yönetici tarafından onaylanmamıştır. Lütfen e-postanıza gelecek onay linkini bekleyin.',
+        ]);
+    }
 
         RateLimiter::clear($this->throttleKey());
     }
