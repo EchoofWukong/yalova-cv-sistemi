@@ -29,6 +29,7 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        // Gelen verileri doğrula
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
@@ -36,7 +37,7 @@ class RegisteredUserController extends Controller
             'role' => ['required', 'in:student,teacher'],
         ]);
 
-        // AKADEMİSYEN İSE: Onay bekliyor (false), ÖĞRENCİ İSE: Direkt aktif (true)
+        // AKADEMİSYEN (teacher) İSE: Onay bekliyor (false), ÖĞRENCİ (student) İSE: Direkt aktif (true)
         $is_approved = ($request->role === 'teacher') ? false : true;
 
         // 1. Kullanıcıyı Veritabanına Kaydet
@@ -48,34 +49,48 @@ class RegisteredUserController extends Controller
             'is_approved' => $is_approved,
         ]);
 
-        // 2. AKADEMİSYEN İSE: Yöneticiye (Sana) Onay Maili Gönder
+        // 2. AKADEMİSYEN İSE: Yöneticiye (Sana) Onay Maili Gönder (BREVO API ÜZERİNDEN)
         if ($request->role === 'teacher') {
-            $adminEmail = 'gkhann213@gmail.com'; // Buraya kendi mailini yaz kanka
+            
+            // Senin istediğin o Gmail adresi
+            $adminEmail = 'yalova.cv.sistemi@gmail.com'; 
+            
+            // Güvenli (Signed) Onay Linki Oluştur
+            // NOT: 'admin.teacher.approve' rotasının web.php'de tanımlı olması gerekir!
             $onayLink = URL::signedRoute('admin.teacher.approve', ['id' => $user->id]);
 
             $mesaj = "
-                <h2>Yeni Akademisyen Kaydı Mevcut!</h2>
-                <p><b>İsim:</b> {$user->name}</p>
-                <p><b>E-posta:</b> {$user->email}</p>
-                <p>Bu hesabı onaylamak için aşağıdaki butona tıklayın:</p>
-                <a href='{$onayLink}' style='padding:10px 20px; background:green; color:white; text-decoration:none; border-radius:5px;'>HESABI ONAYLA</a>
+                <div style='font-family: Arial, sans-serif; border: 1px solid #ddd; padding: 20px; border-radius: 10px;'>
+                    <h2 style='color: #2c3e50;'>🚨 Akademisyen Onay Talebi</h2>
+                    <p>Sisteme yeni bir hoca kayıt oldu. Onayınızı bekliyor:</p>
+                    <hr>
+                    <p><b>Hoca Adı:</b> {$user->name}</p>
+                    <p><b>E-posta:</b> {$user->email}</p>
+                    <hr>
+                    <p>Bu hocanın sisteme giriş yapabilmesi için aşağıdaki butona tıklayarak onay verin:</p>
+                    <div style='text-align: center; margin-top: 20px;'>
+                        <a href='{$onayLink}' style='padding:12px 25px; background-color: #27ae60; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;'>HOCAYI ONAYLA</a>
+                    </div>
+                </div>
             ";
 
             try {
-                Mail::html($mesaj, function ($msg) use ($adminEmail) {
-                    $msg->to($adminEmail)->subject('🚨 Akademisyen Onay Talebi - Yalova CV');
+                // BREVO API TRANSPORTU BURADA DEVREYE GİRER
+                Mail::html($mesaj, function ($msg) use ($adminEmail, $user) {
+                    $msg->to($adminEmail)
+                        ->subject('🚨 Yeni Akademisyen Kaydı: ' . $user->name);
                 });
             } catch (\Exception $e) {
-                // Hata olsa bile kullanıcıyı login sayfasına atalım
+                // Mail gitmese bile hatayı logla, sistem çökmesin
+                \Log::error("Akademisyen mail hatası: " . $e->getMessage());
             }
 
             return redirect()->route('login')->with('status', 'Akademisyen kaydınız alındı. Yönetici onayından sonra giriş yapabilirsiniz.');
         }
 
-        // 3. ÖĞRENCİ İSE: Doğrulama Mailini (Brevo Üzerinden) Fırlat!
+        // 3. ÖĞRENCİ İSE: Standart Doğrulama Mailini (Brevo) Fırlat!
         event(new Registered($user));
 
-        // Öğrenciyi hemen içeri alma, önce mailini onaylasın
         return redirect()->route('login')->with('status', 'Öğrenci kaydınız başarılı! Lütfen e-postanıza gelen doğrulama linkine tıklayın.');
     }
 }
