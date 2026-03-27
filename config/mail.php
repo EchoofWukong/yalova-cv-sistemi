@@ -39,8 +39,9 @@ return [
 
         // BREVO API MODU - RENDER'IN ENGELLEYEMEYECEĞİ TEK YOL
         'brevo' => [
-            'transport' => 'sendinblue',
-        ],
+    'transport' => 'sendinblue',
+    'password' => env('MAIL_PASSWORD'), // Burası API Key'i okur
+],
 
         'smtp' => [
             'transport' => 'smtp',

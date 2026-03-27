@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Mail;
+use Symfony\Component\Mailer\Bridge\Sendinblue\Transport\SendinblueTransportFactory;
+use Symfony\Component\Mailer\Transport\Dsn;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,9 +22,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // LARAVEL'İ ZORLA HTTPS YAP (GÜVENLİK UYARISINI ÇÖZER)
-        if (config('app.env') !== 'local') {
-            URL::forceScheme('https');
-        }
+        // BREVO API TRANSPORTUNU BURADA KAYDEDİYORUZ
+        Mail::extend('sendinblue', function (array $config) {
+            return (new SendinblueTransportFactory)->create(
+                new Dsn(
+                    'sendinblue+api',
+                    'default',
+                    config('mail.mailers.brevo.password') // Render'daki API Key'i kullanır
+                )
+            );
+        });
     }
 }
