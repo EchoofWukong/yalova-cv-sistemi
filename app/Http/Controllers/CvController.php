@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Cv;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File; // Dosya işlemleri için eklendi
 
 class CvController extends Controller
 {
@@ -17,21 +18,21 @@ class CvController extends Controller
     {
         $foto_yolu = null;
         if ($request->hasFile('profil_fotografi')) {
-    $file = $request->file('profil_fotografi');
-    $filename = time() . '_' . $file->getClientOriginalName();
-    
-    // Klasör yolunu belirle
-    $path = public_path('uploads');
+            $file = $request->file('profil_fotografi');
+            $filename = time() . '_' . preg_replace('/[^A-Za-z0-9.]/', '_', $file->getClientOriginalName());
+            
+            // Klasör yolunu belirle
+            $path = public_path('uploads');
 
-    // EĞER KLASÖR YOKSA OLUŞTUR (Bu kısım hatayı çözer)
-    if (!file_exists($path)) {
-        mkdir($path, 0777, true);
-    }
+            // KRİTİK: Klasör yoksa oluştur ve tam yetki (0777) ver
+            if (!File::isDirectory($path)) {
+                File::makeDirectory($path, 0777, true, true);
+            }
 
-    // Dosyayı taşı
-    $file->move($path, $filename);
-    $foto_yolu = 'uploads/' . $filename;
-}
+            // Dosyayı taşı
+            $file->move($path, $filename);
+            $foto_yolu = 'uploads/' . $filename;
+        }
 
         $cv = Cv::create([
             'user_id' => Auth::id(),
@@ -87,7 +88,6 @@ class CvController extends Controller
             abort(403, 'Bu özgeçmişi görüntüleme yetkiniz yok.');
         }
 
-        // YENİ TEMİZ DOSYAMIZA (detay.blade.php) YÖNLENDİRİYORUZ
         return view('cv.detay', compact('cv'));
     }
 
@@ -103,12 +103,21 @@ class CvController extends Controller
 
         $foto_yolu = $cv->profil_fotografi;
         if ($request->hasFile('profil_fotografi')) {
-            if($foto_yolu && file_exists(public_path($foto_yolu))) {
-                unlink(public_path($foto_yolu));
+            // Eski fotoğrafı sil
+            if($foto_yolu && File::exists(public_path($foto_yolu))) {
+                File::delete(public_path($foto_yolu));
             }
+
             $file = $request->file('profil_fotografi');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('uploads'), $filename);
+            $filename = time() . '_' . preg_replace('/[^A-Za-z0-9.]/', '_', $file->getClientOriginalName());
+            
+            // Klasör yolunu belirle ve Render için kontrol et
+            $path = public_path('uploads');
+            if (!File::isDirectory($path)) {
+                File::makeDirectory($path, 0777, true, true);
+            }
+
+            $file->move($path, $filename);
             $foto_yolu = 'uploads/' . $filename;
         }
 
@@ -162,8 +171,8 @@ class CvController extends Controller
     public function destroy($id)
     {
         $cv = Cv::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
-        if($cv->profil_fotografi && file_exists(public_path($cv->profil_fotografi))) {
-            unlink(public_path($cv->profil_fotografi));
+        if($cv->profil_fotografi && File::exists(public_path($cv->profil_fotografi))) {
+            File::delete(public_path($cv->profil_fotografi));
         }
         $cv->delete();
         return redirect()->route('dashboard')->with('success', 'CV başarıyla silindi!');
