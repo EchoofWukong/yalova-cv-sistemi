@@ -17,11 +17,21 @@ class CvController extends Controller
     {
         $foto_yolu = null;
         if ($request->hasFile('profil_fotografi')) {
-            $file = $request->file('profil_fotografi');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('uploads'), $filename);
-            $foto_yolu = 'uploads/' . $filename;
-        }
+    $file = $request->file('profil_fotografi');
+    $filename = time() . '_' . $file->getClientOriginalName();
+    
+    // Klasör yolunu belirle
+    $path = public_path('uploads');
+
+    // EĞER KLASÖR YOKSA OLUŞTUR (Bu kısım hatayı çözer)
+    if (!file_exists($path)) {
+        mkdir($path, 0777, true);
+    }
+
+    // Dosyayı taşı
+    $file->move($path, $filename);
+    $foto_yolu = 'uploads/' . $filename;
+}
 
         $cv = Cv::create([
             'user_id' => Auth::id(),
