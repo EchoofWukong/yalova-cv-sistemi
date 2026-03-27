@@ -180,32 +180,34 @@ class CvController extends Controller
     
    public function search(Request $request)
 {
-    // 1. JavaScript'ten gelen arama terimini alıyoruz (query)
+    // JavaScript'ten gelen harfleri alıyoruz
     $query = $request->input('query');
 
-    // 2. Aramayı 'users' tablosundaki 'name' üzerinden yapıyoruz
+    // Eğer arama kutusu boşsa veya 2 harften azsa boş döndür
+    if (!$query || strlen($query) < 2) {
+        return response()->json([]);
+    }
+
+    // RENDER (POSTGRESQL) İÇİN KÜÇÜK HARF DUYARLILIĞI ÇÖZÜMÜ
     $cvs = \App\Models\Cv::with('user')
         ->whereHas('user', function($q) use ($query) {
             $q->where('role', 'student') // Sadece öğrenciler
-              ->where('is_approved', true) // Senin onay verdiğin (1 olan) öğrenciler
-              ->where('name', 'LIKE', "%{$query}%"); // İsim araması burada
+              ->where('is_approved', true) // Sadece onaylılar
+              // İŞTE BÜYÜ/KÜÇÜK HARF SORUNUNU ÇÖZEN O SİHİRLİ SATIR:
+              ->whereRaw('LOWER(name) LIKE ?', ['%' . mb_strtolower(trim($query), 'UTF-8') . '%']);
         })
         ->get();
 
-    // 3. JavaScript'in (Frontend) beklediği formatta paketliyoruz
+    // JavaScript'in (Frontend) beklediği formata çeviriyoruz
     $results = $cvs->map(function($cv) {
         return [
             'id' => $cv->id,
-            'ad_soyad' => $cv->user->name, // İsmi kullanıcı tablosundan çektik
-            
-            // SENİN SÜTUN ADIN 'sablon' OLDUĞU İÇİN BURAYI DÜZELTTİM:
+            'ad_soyad' => $cv->user->name ?? 'İsimsiz', 
             'sablon' => $cv->sablon ?? 'modern', 
-            
-            'updated_at' => $cv->updated_at->toIso8601String(),
+            'updated_at' => $cv->updated_at ? $cv->updated_at->toIso8601String() : null,
         ];
     });
 
-    // 4. Veriyi JSON olarak fırlatıyoruz
     return response()->json($results);
 }
 }
