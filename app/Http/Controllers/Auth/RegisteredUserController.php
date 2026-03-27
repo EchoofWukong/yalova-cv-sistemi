@@ -1,8 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
-
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\Auth; // TEK NAMESPACE OLMALI!
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
@@ -13,63 +11,58 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
-use Illuminate\Support\Facades\Mail; // Bunu zaten eklemiştik
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
+
 class RegisteredUserController extends Controller
 {
-    /**
-     * Display the registration view.
-     */
     public function create(): View
     {
         return view('auth.register');
     }
 
-    /**
-     * Handle an incoming registration request.
-     *
-     * @throws ValidationException
-     */
     public function store(Request $request): RedirectResponse
     {
-        // 1. Gelen Rolün Geçerli Olup Olmadığını Kontrol Et
+        // 1. Temel Doğrulama
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'role' => ['required', 'in:student,teacher'],
-            'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        // 2. Rol Öğrenciyse Okul Maili Zorunlu, Öğretmense Serbest
+        // 2. Rol Bazlı E-posta Doğrulaması (HATA MESAJLARI ÖZELLEŞTİRİLDİ)
         if ($request->role === 'student') {
             $request->validate([
                 'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class, 'ends_with:@ogrenci.yalova.edu.tr'],
-            ], ['email.ends_with' => 'Sisteme sadece @ogrenci.yalova.edu.tr uzantılı okul e-postanız ile kayıt olabilirsiniz.']);
-            $is_approved = true; // Öğrenci anında onaylanır
+            ], [
+                'email.ends_with' => 'Öğrenci olarak sadece @ogrenci.yalova.edu.tr uzantılı mail ile kayıt olabilirsiniz.',
+                'email.unique' => 'Bu öğrenci e-postası zaten sistemde kayıtlı.'
+            ]);
+            $is_approved = true;
         } else {
             $request->validate([
                 'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            ], [
+                'email.unique' => 'Bu akademisyen e-postası zaten sistemde kayıtlı. Lütfen giriş yapmayı deneyin.'
             ]);
-            $is_approved = false; // Öğretmen onay bekler
+            $is_approved = false;
         }
 
-        
-       // 3. Kullanıcıyı Veritabanına Kaydet
+        // 3. Kullanıcıyı Veritabanına Kaydet
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => \Illuminate\Support\Facades\Hash::make($request->password),
+            'password' => Hash::make($request->password),
             'role' => $request->role,
             'is_approved' => $is_approved,
-            // EĞER ÖĞRETMENSE: E-posta onay tarihini ŞİMDİ olarak ayarla (Böylece o ekranı görmez)
             'email_verified_at' => ($request->role === 'teacher') ? now() : null,
         ]);
 
-       // 4. EĞER ÖĞRETMENSE: Sana mail at (Onay Butonlu)
+        // 4. ÖĞRETMENSE: Admin'e onay maili at
         if ($request->role === 'teacher') {
-            // Güvenli, süreli ve imzalı onay linki oluşturuyoruz
             $approveUrl = URL::signedRoute('admin.teacher.approve', ['id' => $user->id]);
-            
             $adminEmail = 'yalova.cv.sistemi@gmail.com';
+
             $mesaj = "
                 <div style='font-family: sans-serif; padding: 30px; border: 1px solid #edf2f7; border-radius: 15px; max-width: 500px;'>
                     <h2 style='color: #9b2c2c; margin-bottom: 20px;'>🚨 Yeni Akademisyen Kaydı!</h2>
@@ -80,19 +73,24 @@ class RegisteredUserController extends Controller
                     </div>
                     <p>Bu kişinin sisteme erişmesini istiyorsanız aşağıdaki butona tıklayın:</p>
                     <a href='{$approveUrl}' style='display: inline-block; background: #2d3748; color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: bold; margin-top: 10px;'>AKADEMİSYENİ ONAYLA</a>
-                    <p style='font-size: 12px; color: #718096; margin-top: 20px;'>Not: Bu bağlantı sadece size özeldir ve güvenlidir.</p>
                 </div>";
 
-            Mail::html($mesaj, function ($msg) use ($adminEmail) {
-                $msg->to($adminEmail)->subject('🚨 Akademisyen Onay Talebi - Yalova CV');
-            });
+            // HATA YAKALAYICI (Burası hayat kurtaracak)
+            try {
+                Mail::html($mesaj, function ($msg) use ($adminEmail) {
+                    $msg->to($adminEmail)->subject('🚨 Akademisyen Onay Talebi - Yalova CV');
+                });
+            } catch (\Exception $e) {
+                // Eğer şifre veya port yanlışsa kırmızı ekran vermek yerine formda hatayı gösterecek!
+                return back()->withInput()->withErrors(['email' => 'Kayıt başarılı ama mail gönderilemedi. HATA: ' . $e->getMessage()]);
+            }
 
             return redirect()->route('login')->with('status', 'Kayıt talebiniz yöneticiye iletildi. Onaylandıktan sonra giriş yapabilirsiniz.');
         }
 
-        // 5. ÖĞRENCİYSE: Doğrulama maili gönder ve giriş yapıp sisteme al
-        event(new \Illuminate\Auth\Events\Registered($user));
-        \Illuminate\Support\Facades\Auth::login($user);
+        // 5. ÖĞRENCİYSE: Doğrulama maili gönder
+        event(new Registered($user));
+        Auth::login($user);
 
         return redirect(route('dashboard', absolute: false));
     }

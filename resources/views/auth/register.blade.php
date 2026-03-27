@@ -64,7 +64,7 @@
                     <label>Ad Soyad / Unvan</label>
                     <input type="text" name="name" value="{{ old('name') }}" placeholder="Örn: Dr. Gökhan Dönmez" required autofocus>
                     @if($errors->has('name'))
-                        <div class="error-msg">• Lütfen geçerli bir ad soyad girin.</div>
+                        <div class="error-msg">• {{ $errors->first('name') }}</div>
                     @endif
                 </div>
 
@@ -72,7 +72,9 @@
                     <label>E-posta Adresi</label>
                     <input type="email" id="email-input" name="email" value="{{ old('email') }}" placeholder="Örn: 252331025@ogrenci.yalova.edu.tr" required>
                     @if($errors->has('email'))
-                        <div class="error-msg">• Bu e-posta adresi zaten kullanımda veya hatalı.</div>
+                        <div class="error-msg" style="color: red; font-size: 14px; font-weight: bold; background: #fff5f5; padding: 10px; border-radius: 5px; border-left: 4px solid red; margin-top: 10px;">
+                            • {{ $errors->first('email') }}
+                        </div>
                     @endif
                 </div>
 
@@ -80,7 +82,7 @@
                     <label>Şifre Belirle</label>
                     <input type="password" name="password" placeholder="••••••••" required>
                     @if($errors->has('password'))
-                        <div class="error-msg">• Şifreler eşleşmiyor veya en az 8 karakter değil.</div>
+                        <div class="error-msg">• {{ $errors->first('password') }}</div>
                     @endif
                 </div>
 
