@@ -79,7 +79,7 @@
                 <div class="form-group">
                     <label>Öğrenci E-posta Adresi</label>
                     <input type="email" name="email" value="{{ old('email') }}" placeholder="Örn: 252331025@ogrenci.yalova.edu.tr" 
-                           pattern=".+@ogrenci\.yalova\.edu\.tr" 
+                     " 
                            title="Lütfen @ogrenci.yalova.edu.tr uzantılı okul e-postanızı girin." 
                            required autofocus>
                     @if($errors->has('email'))
