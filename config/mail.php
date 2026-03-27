@@ -2,9 +2,35 @@
 
 return [
 
+    /*
+    |--------------------------------------------------------------------------
+    | Default Mailer
+    |--------------------------------------------------------------------------
+    |
+    | Laravel, varsayılan olarak hangi mail sistemini kullanacağını buradan anlar.
+    | .env dosyasında MAIL_MAILER=brevo yaptığımızda burası devreye girer.
+    |
+    */
+
     'default' => env('MAIL_MAILER', 'log'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Mailer Configurations
+    |--------------------------------------------------------------------------
+    |
+    | Burada tüm mail göndericilerin ayarları bulunur. 
+    | Senin için "brevo" kısmını en üste, en sağlam şekilde ekledim.
+    |
+    */
+
     'mailers' => [
+
+        // BREVO (SENDINBLUE) AYARI - BİZİM ASIL MOTORUMUZ BU
+        'brevo' => [
+            'transport' => 'sendinblue',
+        ],
+
         'smtp' => [
             'transport' => 'smtp',
             'scheme' => env('MAIL_SCHEME'),
@@ -23,11 +49,6 @@ return [
 
         'postmark' => [
             'transport' => 'postmark',
-        ],
-
-        // RENDER İÇİN KULLANACAĞIMIZ BACA (BURASI)
-        'resend' => [
-            'transport' => 'resend',
         ],
 
         'sendmail' => [
@@ -63,8 +84,17 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Global "From" Address
+    |--------------------------------------------------------------------------
+    |
+    | Mail kutusuna düştüğünde "Gönderen" kısmında ne yazacağını buradan ayarlarız.
+    |
+    */
+
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'onboarding@resend.dev'),
+        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Yalova CV Sistemi')),
     ],
 

@@ -2,12 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail; // DOĞRULAMA MOTORU EKLENDİ
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-// "implements MustVerifyEmail" KISMI EKLENDİ
 class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable;
@@ -49,11 +48,12 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Akademisyenler için e-posta doğrulamasını devre dışı bırakır.
+     * E-posta doğrulaması kontrolü.
+     * Akademisyenler için otomatik true döner, öğrenciler linke tıklamalıdır.
      */
     public function hasVerifiedEmail()
     {
-        // Eğer rolü teacher (öğretmen) ise her zaman "onaylı" kabul et
+        // Eğer rolü teacher (öğretmen) ise mail onayı isteme (zaten manuel onaylıyoruz)
         if ($this->role === 'teacher') {
             return true;
         }
