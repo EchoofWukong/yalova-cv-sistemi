@@ -34,13 +34,12 @@
 
         /* CV LİSTESİ (İÇERİK) */
         .cv-list { 
-            display: none; /* Başlangıçta gizli */
+            display: none; 
             padding: 15px 25px; 
             background: #fff; 
             border-top: 1px solid #f1f5f9;
         }
         
-        /* AKTİF (AÇIK) LİSTE STİLİ */
         .name-group.active .cv-list { display: block; animation: slideDown 0.3s ease-out; }
 
         @keyframes slideDown {
@@ -60,8 +59,9 @@
         .btn-view { 
             background: #2d3748; color: white !important; text-decoration: none; 
             padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: bold; transition: 0.2s;
+            display: inline-block;
         }
-        .btn-view:hover { background: #e53e3e; }
+        .btn-view:hover { opacity: 0.8; }
 
         .empty-msg { text-align: center; color: #94a3b8; padding: 60px 0; }
         .loading { text-align: center; color: #3b82f6; padding: 40px 0; font-weight: bold; }
@@ -88,20 +88,20 @@
     const resultsContainer = document.getElementById('results-container');
     const statusText = document.getElementById('search-status');
 
-    // SAYFA AÇILIR AÇILMAZ TÜM ÖĞRENCİLERİ GETİR
+    // LARAVEL'DEN GİRİŞ YAPAN KİŞİNİN ROLÜNÜ VE GÜVENLİK TOKENİNİ ALIYORUZ
+    const currentUserRole = "{{ Auth::user()->role ?? '' }}";
+    const csrfToken = "{{ csrf_token() }}";
+
     window.onload = function() {
         fetchStudents(''); 
     };
 
-    // YAZI YAZILDIKÇA (FİLTRELEME İÇİN)
     searchInput.addEventListener('input', function() {
         let query = this.value.trim().toLowerCase();
         fetchStudents(query);
     });
 
-    // SUNUCUDAN VERİ ÇEKEN VE EKRANA BASAN ANA FONKSİYON
     function fetchStudents(query) {
-        // Fetch URL'si (Query boşsa hepsini getirir)
         let url = `{{ route('cv.search') }}?query=${query}`;
 
         fetch(url, {
@@ -112,7 +112,7 @@
         })
         .then(response => response.json())
         .then(data => {
-            resultsContainer.innerHTML = ''; // Ekranı temizle
+            resultsContainer.innerHTML = ''; 
             
             if (data.length === 0) {
                 statusText.innerText = 'Sonuç bulunamadı.';
@@ -120,7 +120,6 @@
                 return;
             }
 
-            // Verileri İsme Göre Grupla
             const grouped = {};
             data.forEach(cv => {
                 if (!grouped[cv.ad_soyad]) {
@@ -131,7 +130,6 @@
 
             statusText.innerText = `${Object.keys(grouped).length} öğrenci listeleniyor.`;
 
-            // Grupları Ekrana Bas (Accordion)
             for (const name in grouped) {
                 const cvs = grouped[name];
                 const groupHtml = `
@@ -150,7 +148,19 @@
                                         <strong>📄 ${cv.sablon.toUpperCase()} Şablonu</strong>
                                         <span>Güncelleme: ${new Date(cv.updated_at).toLocaleDateString('tr-TR')}</span>
                                     </div>
-                                    <a href="/cv/goster/${cv.id}" class="btn-view">CV'yi İncele</a>
+                                    <div style="display:flex; align-items:center; gap:5px;">
+                                        <a href="/cv/goster/${cv.id}" class="btn-view">CV'yi İncele</a>
+                                        
+                                        ${currentUserRole === 'admin' ? `
+                                            <a href="/cv/duzenle/${cv.id}" class="btn-view" style="background: #f59e0b;">Düzenle</a>
+                                            <form action="/cv/sil/${cv.id}" method="POST" style="margin:0;" onsubmit="return confirm('Bu CV kalıcı olarak silinecek. Emin misiniz?');">
+                                                <input type="hidden" name="_token" value="${csrfToken}">
+                                                <input type="hidden" name="_method" value="DELETE">
+                                                <button type="submit" class="btn-view" style="background: #ef4444; border:none; cursor:pointer; font-family:inherit;">Sil</button>
+                                            </form>
+                                        ` : ''}
+
+                                    </div>
                                 </div>
                             `).join('')}
                         </div>
@@ -165,7 +175,6 @@
         });
     }
 
-    // ACCORDION (AÇ/KAPAT) FONKSİYONU
     function toggleAccordion(element) {
         const group = element.parentElement;
         group.classList.toggle('active');
