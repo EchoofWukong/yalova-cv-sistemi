@@ -44,8 +44,14 @@
             </p>
 
             @if (session('status'))
+                @php
+                    $durum = session('status');
+                    if($durum == 'passwords.sent' || str_contains($durum, 'emailed')) {
+                        $durum = 'Şifre sıfırlama bağlantısı e-postanıza gönderildi! Lütfen gelen kutunuzu kontrol edin.';
+                    }
+                @endphp
                 <div style="background: #c6f6d5; color: #22543d; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; font-size: 13px; border-left: 5px solid #38a169;">
-                    ✉️ {{ session('status') }}
+                    ✉️ {{ $durum }}
                 </div>
             @endif
 
@@ -54,8 +60,15 @@
                 <div class="form-group">
                     <label>E-posta Adresiniz</label>
                     <input type="email" name="email" value="{{ old('email') }}" placeholder="Sisteme kayıtlı e-posta adresiniz" required autofocus>
+                    
                     @if($errors->has('email'))
-                        <div class="error-msg">• {{ $errors->first('email') }}</div>
+                        @php
+                            $hata = $errors->first('email');
+                            if($hata == 'passwords.user' || str_contains($hata, 'user')) {
+                                $hata = 'Sistemde bu e-posta adresine ait bir kayıt bulunamadı.';
+                            }
+                        @endphp
+                        <div class="error-msg">• {{ $hata }}</div>
                     @endif
                 </div>
 
