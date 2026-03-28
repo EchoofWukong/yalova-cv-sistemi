@@ -73,25 +73,17 @@ Route::middleware('auth')->group(function () {
 require __DIR__.'/auth.php';
 
 // =========================================================================
-// RENDER İÇİN ARKA KAPI (CACHE TEMİZLEME + VERİTABANI KURULUMU)
+// RENDER ARKA KAPI (HER ŞEYİ SİL VE BAŞTAN KUR)
 // =========================================================================
 Route::get('/veritabanini-kur', function () {
     try {
         \Illuminate\Support\Facades\Artisan::call('config:clear');
         \Illuminate\Support\Facades\Artisan::call('cache:clear');
         
-        $dbConnection = config('database.default');
-        $dbName = config('database.connections.' . $dbConnection . '.database');
+        // DİKKAT: migrate:fresh tüm tabloları siler ve dosyaya bakarak sıfırdan kurar!
+        \Illuminate\Support\Facades\Artisan::call('migrate:fresh', ['--force' => true]);
         
-        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-        
-        return "
-        <div style='font-family:sans-serif; text-align:center; margin-top:50px;'>
-            <h2 style='color:green;'>✅ Hafıza Temizlendi ve Tablolar Kuruldu!</h2>
-            <p style='font-size: 18px;'><b>Bağlanılan Sistem:</b> <span style='color:blue;'>{$dbConnection}</span></p>
-            <p style='font-size: 18px;'><b>Veritabanı Adı:</b> <span style='color:blue;'>{$dbName}</span></p>
-            <p>Eğer yukarıda <b>'pgsql'</b> yazıyorsa sorun kesin çözüldü demektir. DBeaver'a gidip Refresh atabilirsin.</p>
-        </div>";
+        return "<h2 style='color:green; text-align:center; margin-top:50px;'>✅ Eski her şey silindi, 'department' sütunu ile beraber tablolar tertemiz kuruldu!</h2>";
     } catch (\Exception $e) {
         return '<h2 style="color:red; text-align:center; margin-top:50px;">❌ Bir hata oluştu: ' . $e->getMessage() . '</h2>';
     }
