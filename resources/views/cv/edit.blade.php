@@ -7,9 +7,13 @@
     <link rel="icon" type="image/png" href="{{ asset('yalova-logo.png') }}">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: #f4f7f6; padding: 40px 20px; color: #333; }
+        body { background-color: #f4f7f6; padding: 40px 20px; color: #333; zoom: 0.9; }
         .form-container { background: #fff; max-width: 950px; margin: 0 auto; padding: 35px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
-        .btn-back { display: inline-block; margin-bottom: 20px; color: #4a5568; text-decoration: none; font-size: 14px; font-weight: bold; background: #edf2f7; padding: 8px 15px; border-radius: 6px; }
+        
+        /* GERİ DÖN BUTONU STİLİ */
+        .btn-back { display: inline-block; margin-bottom: 20px; color: #4a5568; text-decoration: none; font-size: 14px; font-weight: bold; background: #edf2f7; padding: 8px 15px; border-radius: 6px; transition: 0.2s; }
+        .btn-back:hover { background: #e2e8f0; }
+
         h2 { border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 25px; color: #1a202c; display: flex; align-items: center; gap: 10px; font-size: 24px; }
         h3 { margin: 30px 0 15px 0; color: #2d3748; border-left: 5px solid #4a5568; padding-left: 12px; font-size: 18px; background: #f8fafc; padding: 8px 0; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -21,7 +25,7 @@
         .full-width { grid-column: span 2; }
         .btn-submit { background: #d69e2e; color: white; border: none; padding: 18px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 35px; transition: 0.3s; }
         .btn-submit:hover { background: #b7791f; transform: translateY(-2px); }
-        body { zoom: 0.9; }
+        
         .dynamic-box { border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px; background: #fbfbfc; position: relative; margin-bottom: 15px; }
         .btn-add { background: #edf2f7; color: #2b6cb0; border: 1px solid #cbd5e0; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; }
         .btn-remove { position: absolute; top: 15px; right: 15px; background: #fed7d7; color: #c53030; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer; font-size: 12px; font-weight: bold; }
@@ -40,12 +44,19 @@
 <body>
 
     <div class="form-container">
-        <a href="{{ route('dashboard') }}" class="btn-back">⬅ Ana Sayfaya Dön</a>
-        <h2><span class="icon-plus">✏️</span> CV'yi Düzenle</h2>
+        <a href="{{ url()->previous() }}" class="btn-back">⬅ Vazgeç ve Geri Dön</a>
+        
+        <h2><span class="icon-plus">✏️</span> CV'yi Düzenle 
+            @if(Auth::user()->role === 'admin') 
+                <span style="font-size: 14px; background: #fed7d7; color: #c53030; padding: 5px 10px; border-radius: 20px; margin-left: 10px;">🛡️ ADMİN YETKİSİ</span>
+            @endif
+        </h2>
         
         <form action="{{ route('cv.update', $cv->id) }}" method="POST" enctype="multipart/form-data">
             @csrf
-            @method('PUT') <h3>🎨 CV Şablonu Seç</h3>
+            @method('PUT') 
+
+            <h3>🎨 CV Şablonu Seç</h3>
             <div class="template-grid">
                 <label>
                     <input type="radio" name="sablon" value="klasik" class="sablon-radio" style="display: none;" {{ $cv->sablon == 'klasik' ? 'checked' : '' }}>

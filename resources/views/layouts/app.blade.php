@@ -72,7 +72,17 @@
             @auth
             <span class="user-label">
                 {{ mb_strtoupper(Auth::user()->name) }} 
-                ({{ Auth::user()->role === 'teacher' ? 'ÖĞRETMEN' : 'ÖĞRENCİ' }})
+<span style="font-size: 12px; opacity: 0.8;">
+    (
+    @if(Auth::user()->role === 'admin')
+        👑 SÜPER ADMİN
+    @elseif(Auth::user()->role === 'teacher')
+        👨‍🏫 AKADEMİSYEN
+    @else
+        🎓 ÖĞRENCİ
+    @endif
+    )
+</span>
             </span>
             <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
                 @csrf

@@ -102,7 +102,7 @@
         @if(Auth::user()->role === 'teacher')
             <a href="{{ route('cv.search') }}" class="btn btn-back">⬅ Arama Sayfasına Dön</a>
         @else
-            <a href="{{ route('dashboard') }}" class="btn btn-back">⬅ Panele Dön</a>
+            <a href="{{ url()->previous() }}" class="btn btn-back">⬅ Panele Dön</a>
         @endif
         <button onclick="window.print()" class="btn btn-print">🖨️ PDF Olarak İndir / Yazdır</button>
     </div>
