@@ -7,6 +7,8 @@ use App\Models\Cv;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\URL;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\CertificateController;
+use Illuminate\Support\Facades\Schema;
 
 // ANA SAYFAYI LOGINE YÖNLENDİR
 Route::redirect('/', '/login');
@@ -53,6 +55,10 @@ Route::get('/hakkinda', function () {
 
 // Gruplandırılmış Rotalar (SADECE GİRİŞ YAPANLAR İÇİN)
 Route::middleware('auth')->group(function () {
+
+// Sertifika Rotaları
+    Route::post('/sertifika/yukle', [CertificateController::class, 'store'])->name('certificate.store');
+    Route::delete('/sertifika/sil/{id}', [CertificateController::class, 'destroy'])->name('certificate.destroy');
     
     // --- SÜPER ADMİN ROTALARI --- (GÜVENLİK İÇİN BURAYA ALINDI)
     Route::get('/yonetici-paneli', [AdminController::class, 'index'])->name('admin.dashboard');
@@ -95,5 +101,27 @@ Route::get('/veritabanini-kur', function () {
         return "<h2 style='color:green; text-align:center; margin-top:50px;'>✅ Eski her şey silindi, 'department' sütunu ile beraber tablolar tertemiz kuruldu!</h2>";
     } catch (\Exception $e) {
         return '<h2 style="color:red; text-align:center; margin-top:50px;">❌ Bir hata oluştu: ' . $e->getMessage() . '</h2>';
+    }
+
+});
+
+// =========================================================================
+// SERTİFİKA TABLOSUNU KUR (SİHİRLİ LİNK)
+// =========================================================================
+Route::get('/dev/sertifika-kur', function () {
+    try {
+        if (!Schema::hasTable('certificates')) {
+            Schema::create('certificates', function ($table) {
+                $table->id();
+                $table->foreignId('user_id')->constrained()->onDelete('cascade');
+                $table->string('baslik');
+                $table->string('dosya_yolu');
+                $table->timestamps();
+            });
+            return "<h2 style='color:green; text-align:center; font-family:sans-serif; margin-top:50px;'>✅ Harika! Sertifikalar tablosu veritabanına eklendi. Ana sayfaya dönüp test edebilirsin.</h2>";
+        }
+        return "<h2 style='color:blue; text-align:center; font-family:sans-serif; margin-top:50px;'>ℹ️ Sertifikalar tablosu zaten kurulu. Her şey yolunda.</h2>";
+    } catch (\Exception $e) {
+        return '<h2 style="color:red; text-align:center; font-family:sans-serif; margin-top:50px;">❌ Bir hata oluştu: ' . $e->getMessage() . '</h2>';
     }
 });

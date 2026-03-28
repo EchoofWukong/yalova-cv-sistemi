@@ -62,4 +62,20 @@ class User extends Authenticatable implements MustVerifyEmail
         // Öğrenciyse normal e-posta onay tarihine bak
         return ! is_null($this->email_verified_at);
     }
+
+    /**
+     * Kullanıcının CV'leri ile bağlantısı
+     */
+    public function cvs()
+    {
+        return $this->hasMany(Cv::class);
+    }
+
+    /**
+     * Kullanıcının Sertifikaları ile bağlantısı (YENİ EKLENEN KISIM)
+     */
+    public function certificates()
+    {
+        return $this->hasMany(Certificate::class);
+    }
 }
