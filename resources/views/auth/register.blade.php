@@ -25,14 +25,18 @@
 
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-size: 12px; font-weight: bold; color: #4a5568; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .form-group input { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; outline: none; transition: 0.3s; background: #f8fafc; }
-        .form-group input:focus { border-color: #e53e3e; background: white; box-shadow: 0 0 0 3px rgba(229,62,62,0.1); }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; outline: none; transition: 0.3s; background: #f8fafc; }
+        .form-group input:focus, .form-group select:focus { border-color: #e53e3e; background: white; box-shadow: 0 0 0 3px rgba(229,62,62,0.1); }
         .error-msg { color: #e53e3e; font-size: 12px; margin-top: 5px; font-weight: bold; }
         .btn-login { width: 100%; background: #2d3748; color: white; border: none; padding: 15px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
         .btn-login:hover { background: #1a202c; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
         .link-text { text-align: center; margin-top: 20px; }
         .link-text a { color: #4a5568; text-decoration: none; font-size: 14px; font-weight: bold; transition: 0.2s; }
         .link-text a:hover { color: #e53e3e; }
+
+        /* OPTGROUP STİLİ */
+        optgroup { font-weight: bold; color: #1e293b; background-color: #f1f5f9; }
+        option { font-weight: normal; color: #334155; background-color: #fff; }
     </style>
 </head>
 <body>
@@ -69,6 +73,58 @@
                 </div>
 
                 <div class="form-group">
+                    <label>Bölüm / Program</label>
+                    <select name="department" id="department-select" required>
+                        <option value="" disabled selected>Lütfen Bölümünüzü Seçin</option>
+                        
+                        <option value="Çınarcık MYO (Yönetim)" id="cinarcik-option" style="display:none; font-weight:bold; color:#b91c1c;" {{ old('department') == 'Çınarcık MYO (Yönetim)' ? 'selected' : '' }}>🏛️ Çınarcık MYO (Yönetim - Tüm Yüksekokul)</option>
+
+                        <optgroup label="Büro Hizmetleri ve Sekreterlik Bölümü">
+                            <option value="Büro Yönetimi ve Yönetici Asistanlığı Programı" {{ old('department') == 'Büro Yönetimi ve Yönetici Asistanlığı Programı' ? 'selected' : '' }}>Büro Yönetimi ve Yönetici Asistanlığı Programı</option>
+                        </optgroup>
+
+                        <optgroup label="Çocuk Bakımı ve Gençlik Hizmetleri Bölümü">
+                            <option value="Çocuk Gelişimi Programı" {{ old('department') == 'Çocuk Gelişimi Programı' ? 'selected' : '' }}>Çocuk Gelişimi Programı</option>
+                        </optgroup>
+
+                        <optgroup label="Hukuk Bölümü">
+                            <option value="Adalet Programı" {{ old('department') == 'Adalet Programı' ? 'selected' : '' }}>Adalet Programı (Yeni öğrenci almamaktadır)</option>
+                        </optgroup>
+
+                        <optgroup label="Malzeme ve Malzeme İşleme Teknolojileri Bölümü">
+                            <option value="Fiber Tekne İmalatı ve Kompozit Kalıp Teknolojileri Programı" {{ old('department') == 'Fiber Tekne İmalatı ve Kompozit Kalıp Teknolojileri Programı' ? 'selected' : '' }}>Fiber Tekne İmalatı ve Kompozit Kalıp Teknolojileri Programı</option>
+                        </optgroup>
+
+                        <optgroup label="Muhasebe ve Vergi Bölümü">
+                            <option value="Muhasebe ve Vergi Uygulamaları Programı" {{ old('department') == 'Muhasebe ve Vergi Uygulamaları Programı' ? 'selected' : '' }}>Muhasebe ve Vergi Uygulamaları Programı</option>
+                        </optgroup>
+
+                        <optgroup label="Mülkiyet Koruma ve Güvenlik Bölümü">
+                            <option value="Özel Güvenlik ve Koruma Programı" {{ old('department') == 'Özel Güvenlik ve Koruma Programı' ? 'selected' : '' }}>Özel Güvenlik ve Koruma Programı</option>
+                        </optgroup>
+
+                        <optgroup label="Pazarlama ve Reklamcılık Bölümü">
+                            <option value="Medya ve İletişim Programı" {{ old('department') == 'Medya ve İletişim Programı' ? 'selected' : '' }}>Medya ve İletişim Programı</option>
+                        </optgroup>
+
+                        <optgroup label="Sosyal Hizmet ve Danışmanlık Bölümü">
+                            <option value="Sosyal Hizmetler Programı" {{ old('department') == 'Sosyal Hizmetler Programı' ? 'selected' : '' }}>Sosyal Hizmetler Programı (Yeni öğrenci almamaktadır)</option>
+                        </optgroup>
+
+                        <optgroup label="Veri Tabanı, Ağ Tasarımı ve Yönetimi Bölümü">
+                            <option value="Kurumsal Bilişim Uzmanlığı Programı" {{ old('department') == 'Kurumsal Bilişim Uzmanlığı Programı' ? 'selected' : '' }}>Kurumsal Bilişim Uzmanlığı Programı</option>
+                        </optgroup>
+
+                        <optgroup label="Yönetim ve Organizasyon Bölümü">
+                            <option value="Yerel Yönetimler Programı" {{ old('department') == 'Yerel Yönetimler Programı' ? 'selected' : '' }}>Yerel Yönetimler Programı</option>
+                        </optgroup>
+                    </select>
+                    @if($errors->has('department'))
+                        <div class="error-msg">• {{ $errors->first('department') }}</div>
+                    @endif
+                </div>
+
+                <div class="form-group">
                     <label>E-posta Adresi</label>
                     <input type="email" id="email-input" name="email" value="{{ old('email') }}" placeholder="Örn: 252331025@ogrenci.yalova.edu.tr" required>
                     @if($errors->has('email'))
@@ -101,7 +157,7 @@
     </div>
 
     <script>
-        // SAYFA YÜKLENDİĞİNDE HAFIZADAKİ ROLÜ (ÖĞRENCİ/HOCA) OTOMATİK SEÇ
+        // SAYFA YÜKLENDİĞİNDE HAFIZADAKİ ROLÜ OTOMATİK SEÇ
         window.onload = function() {
             let activeRole = document.getElementById('role-input').value;
             setRole(activeRole);
@@ -111,6 +167,8 @@
             document.getElementById('role-input').value = role;
             let emailInput = document.getElementById('email-input');
             let submitBtn = document.getElementById('submit-btn');
+            let cinarcikOption = document.getElementById('cinarcik-option');
+            let departmentSelect = document.getElementById('department-select');
             
             if(role === 'student') {
                 document.getElementById('btn-student').classList.add('active');
@@ -121,6 +179,12 @@
                 document.getElementById('teacher-info').style.display = 'none';
                 submitBtn.innerText = "ÖĞRENCİ OLARAK KAYIT OL";
                 submitBtn.style.background = "#2d3748";
+                
+                // Öğrenci Yönetim seçemesin
+                cinarcikOption.style.display = 'none';
+                if(departmentSelect.value === 'Çınarcık MYO (Yönetim)') {
+                    departmentSelect.value = '';
+                }
             } else {
                 document.getElementById('btn-teacher').classList.add('active');
                 document.getElementById('btn-student').classList.remove('active');
@@ -130,6 +194,9 @@
                 document.getElementById('teacher-info').style.display = 'block';
                 submitBtn.innerText = "AKADEMİSYEN OLARAK ONAYA GÖNDER";
                 submitBtn.style.background = "#9b2c2c";
+                
+                // Hoca Yönetimi seçebilsin
+                cinarcikOption.style.display = 'block';
             }
         }
     </script>

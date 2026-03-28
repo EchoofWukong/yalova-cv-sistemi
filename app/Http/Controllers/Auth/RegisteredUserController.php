@@ -29,23 +29,25 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        // Gelen verileri doğrula
+        // Gelen verileri doğrula (BÖLÜM EKLENDİ)
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'role' => ['required', 'in:student,teacher'],
+            'department' => ['required', 'string', 'max:255'], // <-- YENİ EKLENEN KURAL: Bölüm zorunlu
         ]);
 
         // AKADEMİSYEN (teacher) İSE: Onay bekliyor (false), ÖĞRENCİ (student) İSE: Direkt aktif (true)
         $is_approved = ($request->role === 'teacher') ? false : true;
 
-        // 1. Kullanıcıyı Veritabanına Kaydet
+        // 1. Kullanıcıyı Veritabanına Kaydet (BÖLÜM EKLENDİ)
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => $request->role,
+            'department' => $request->department, // <-- YENİ EKLENEN KISIM: Seçilen bölümü kaydet
             'is_approved' => $is_approved,
         ]);
 
@@ -66,6 +68,7 @@ class RegisteredUserController extends Controller
                     <hr>
                     <p><b>Hoca Adı:</b> {$user->name}</p>
                     <p><b>E-posta:</b> {$user->email}</p>
+                    <p><b>Bölüm:</b> {$user->department}</p>
                     <hr>
                     <p>Bu hocanın sisteme giriş yapabilmesi için aşağıdaki butona tıklayarak onay verin:</p>
                     <div style='text-align: center; margin-top: 20px;'>
