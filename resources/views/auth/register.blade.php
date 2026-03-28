@@ -3,17 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kayıt Ol - Yalova Üniversitesi CV Sistemi</title>
-    <link rel="icon" type="image/png" href="{{ asset('yalova-logo.png') }}">
+    <title>Kayıt Ol - Çınarcık MYO CV Sistemi</title>
+    <link rel="icon" type="image/jpeg" href="{{ asset('cinarcik-logo.jpg') }}">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { zoom: 0.9; background-color: #020617; background-image: radial-gradient(at 0% 0%, rgba(30, 58, 138, 0.7) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(76, 29, 149, 0.6) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(15, 23, 42, 0.8) 0px, transparent 50%), radial-gradient(at 0% 100%, rgba(55, 48, 163, 0.5) 0px, transparent 50%); background-attachment: fixed; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
         .login-wrapper { display: flex; background: white; border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.4); overflow: hidden; max-width: 900px; width: 100%; margin: auto;}
         .login-left { background: linear-gradient(135deg, #9b2c2c, #e53e3e); color: white; padding: 40px; width: 45%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-        .login-left h1 { font-size: 28px; margin-bottom: 15px; font-weight: 900; letter-spacing: 1px; }
+        .login-left h1 { font-size: 26px; margin-bottom: 15px; font-weight: 900; letter-spacing: 1px; }
         .login-left p { font-size: 15px; opacity: 0.9; line-height: 1.6; }
-        .logo-circle { width: 90px; height: 90px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); padding: 15px; }
-        .logo-circle img { width: 100%; height: auto; }
+        
+        /* LOGO İÇİN CSS GÜNCELLENDİ */
+        .logo-circle { width: 130px; height: 130px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); padding: 5px; overflow: hidden; }
+        .logo-circle img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
+        
         .login-right { padding: 40px 50px; width: 55%; background: white; display: flex; flex-direction: column; justify-content: center; }
         .login-right h2 { color: #2d3748; font-size: 24px; margin-bottom: 15px; }
         
@@ -43,9 +46,9 @@
 
     <div class="login-wrapper">
         <div class="login-left">
-            <div class="logo-circle"><img src="{{ asset('yalova-logo.png') }}" alt="Yalova Logo"></div>
-            <h1>YALOVA ÜNİ.</h1>
-            <p>Sisteme kayıt olarak saniyeler içinde profesyonel özgeçmişini (CV) hazırlamaya başla veya akademisyen girişi yap.</p>
+            <div class="logo-circle"><img src="{{ asset('cinarcik-logo.jpg') }}" alt="Çınarcık MYO Logo"></div>
+            <h1>ÇINARCIK MYO</h1>
+            <p>Yalova Üniversitesi Çınarcık Meslek Yüksekokulu CV ve Yetenek Havuzu Sistemine Hoş Geldiniz.</p>
         </div>
 
         <div class="login-right">

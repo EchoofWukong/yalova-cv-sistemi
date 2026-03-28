@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Giriş Yap - Yalova Üniversitesi CV Sistemi</title>
-    <link rel="icon" type="image/png" href="{{ asset('yalova-logo.png') }}">
+    <title>Giriş Yap - Çınarcık MYO CV Sistemi</title>
+    <link rel="icon" type="image/jpeg" href="{{ asset('cinarcik-logo.jpg') }}">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         
@@ -31,8 +31,10 @@
         .login-left { background: linear-gradient(135deg, #9b2c2c, #e53e3e); color: white; padding: 50px; width: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
         .login-left h1 { font-size: 32px; margin-bottom: 15px; font-weight: 900; letter-spacing: 1px; }
         .login-left p { font-size: 16px; opacity: 0.9; line-height: 1.6; }
-        .logo-circle { width: 90px; height: 90px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); padding: 15px; }
-        .logo-circle img { width: 100%; height: auto; }
+        
+        /* LOGO İÇİN CSS GÜNCELLENDİ (Daha büyük ve yuvarlak) */
+        .logo-circle { width: 130px; height: 130px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); padding: 5px; overflow: hidden;}
+        .logo-circle img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
 
         /* Sağ Taraf - Form */
         .login-right { padding: 50px; width: 50%; background: white; display: flex; flex-direction: column; justify-content: center; }
@@ -60,14 +62,14 @@
     <div class="login-wrapper">
         <div class="login-left">
             <div class="logo-circle">
-                <img src="{{ asset('yalova-logo.png') }}" alt="Yalova Logo">
+                <img src="{{ asset('cinarcik-logo.jpg') }}" alt="Çınarcık MYO Logo">
             </div>
-            <h1>YALOVA ÜNİVERSİTESİ</h1>
-            <p>Çınarcık MYO öğrencileri için özel olarak geliştirilmiş Akıllı Özgeçmiş (CV) Oluşturma platformuna hoş geldiniz.</p>
+            <h1>ÇINARCIK MYO</h1>
+            <p>Yalova Üniversitesi Çınarcık Meslek Yüksekokulu CV ve Yetenek Havuzu Sistemine Hoş Geldiniz.</p>
         </div>
 
         <div class="login-right">
-            <h2>Öğrenci Girişi</h2>
+            <h2>Sisteme Giriş</h2>
             @if (session('status'))
                 <div style="background: #c6f6d5; color: #22543d; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; font-size: 13px; border-left: 5px solid #38a169;">
                     ✅ {{ session('status') }}
@@ -77,18 +79,15 @@
             <form method="POST" action="{{ route('login') }}">
                 @csrf
                 <div class="form-group">
-                    <label>Öğrenci E-posta Adresi</label>
-                    <input type="email" name="email" value="{{ old('email') }}" placeholder="Örn: 252331025@ogrenci.yalova.edu.tr" 
-                     " 
-                           title="Lütfen @ogrenci.yalova.edu.tr uzantılı okul e-postanızı girin." 
-                           required autofocus>
+                    <label>E-posta Adresi</label>
+                    <input type="email" name="email" value="{{ old('email') }}" placeholder="Sisteme kayıtlı e-posta adresiniz" required autofocus>
                     @if($errors->has('email'))
                         <div class="error-msg">• Girdiğiniz e-posta hatalı veya sisteme kayıtlı değil.</div>
                     @endif
                 </div>
 
                 <div class="form-group">
-                    <label>Okul Şifresi</label>
+                    <label>Şifre</label>
                     <input type="password" name="password" placeholder="••••••••" required>
                     @if($errors->has('password'))
                         <div class="error-msg">• Girdiğiniz şifre hatalı. Lütfen tekrar deneyin.</div>
