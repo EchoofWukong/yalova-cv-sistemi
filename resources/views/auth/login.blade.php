@@ -29,10 +29,10 @@
         
         /* Sol Taraf - Karşılama */
         .login-left { background: linear-gradient(135deg, #9b2c2c, #e53e3e); color: white; padding: 50px; width: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-        .login-left h1 { font-size: 32px; margin-bottom: 15px; font-weight: 900; letter-spacing: 1px; }
+        .login-left h1 { font-size: 24px; margin-bottom: 15px; font-weight: 900; letter-spacing: 1px; line-height: 1.3; }
         .login-left p { font-size: 16px; opacity: 0.9; line-height: 1.6; }
         
-        /* LOGO İÇİN CSS GÜNCELLENDİ (Daha büyük ve yuvarlak) */
+        /* LOGO İÇİN CSS GÜNCELLENDİ (Çerçeve hatası giderildi, boyut büyüdü) */
         .logo-circle { width: 130px; height: 130px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); padding: 5px; overflow: hidden;}
         .logo-circle img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
 
@@ -49,6 +49,9 @@
         
         .btn-login { width: 100%; background: #2d3748; color: white; border: none; padding: 16px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
         .btn-login:hover { background: #1a202c; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        
+        /* Şifremi Unuttum Linki Hover Efekti */
+        .forgot-pass:hover { color: #c53030 !important; text-decoration: underline !important; }
 
         @media (max-width: 768px) {
             .login-wrapper { flex-direction: column; }
@@ -64,7 +67,7 @@
             <div class="logo-circle">
                 <img src="{{ asset('cinarcik-logo.jpg') }}" alt="Çınarcık MYO Logo">
             </div>
-            <h1>ÇINARCIK MYO</h1>
+            <h1>YALOVA ÜNİVERSİTESİ<br>ÇINARCIK MYO</h1>
             <p>Yalova Üniversitesi Çınarcık Meslek Yüksekokulu CV ve Yetenek Havuzu Sistemine Hoş Geldiniz.</p>
         </div>
 
@@ -94,10 +97,16 @@
                     @endif
                 </div>
 
-                <div style="margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <label style="font-size: 14px; color: #4a5568; cursor: pointer; display: flex; align-items: center; gap: 8px;">
                         <input type="checkbox" name="remember" style="width: 18px; height: 18px;"> Beni Hatırla
                     </label>
+                    
+                    @if (Route::has('password.request'))
+                        <a href="{{ route('password.request') }}" class="forgot-pass" style="color: #e53e3e; text-decoration: none; font-size: 13px; font-weight: bold; transition: 0.2s;">
+                            Şifremi Unuttum?
+                        </a>
+                    @endif
                 </div>
 
                 <button type="submit" class="btn-login">SİSTEME GİRİŞ YAP</button>

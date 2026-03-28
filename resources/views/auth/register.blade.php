@@ -10,10 +10,10 @@
         body { zoom: 0.9; background-color: #020617; background-image: radial-gradient(at 0% 0%, rgba(30, 58, 138, 0.7) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(76, 29, 149, 0.6) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(15, 23, 42, 0.8) 0px, transparent 50%), radial-gradient(at 0% 100%, rgba(55, 48, 163, 0.5) 0px, transparent 50%); background-attachment: fixed; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
         .login-wrapper { display: flex; background: white; border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.4); overflow: hidden; max-width: 900px; width: 100%; margin: auto;}
         .login-left { background: linear-gradient(135deg, #9b2c2c, #e53e3e); color: white; padding: 40px; width: 45%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-        .login-left h1 { font-size: 26px; margin-bottom: 15px; font-weight: 900; letter-spacing: 1px; }
+        .login-left h1 { font-size: 24px; margin-bottom: 15px; font-weight: 900; letter-spacing: 1px; line-height: 1.3; }
         .login-left p { font-size: 15px; opacity: 0.9; line-height: 1.6; }
         
-        /* LOGO İÇİN CSS GÜNCELLENDİ */
+        /* LOGO İÇİN CSS GÜNCELLENDİ (Çerçeve hatası giderildi) */
         .logo-circle { width: 130px; height: 130px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); padding: 5px; overflow: hidden; }
         .logo-circle img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
         
@@ -47,7 +47,7 @@
     <div class="login-wrapper">
         <div class="login-left">
             <div class="logo-circle"><img src="{{ asset('cinarcik-logo.jpg') }}" alt="Çınarcık MYO Logo"></div>
-            <h1>ÇINARCIK MYO</h1>
+            <h1>YALOVA ÜNİVERSİTESİ<br>ÇINARCIK MYO</h1>
             <p>Yalova Üniversitesi Çınarcık Meslek Yüksekokulu CV ve Yetenek Havuzu Sistemine Hoş Geldiniz.</p>
         </div>
 
