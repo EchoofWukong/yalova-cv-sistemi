@@ -2,8 +2,16 @@
 
 @section('content')
 <div style="max-width: 1200px; margin: 0 auto;">
+
+    @if(Auth::user()->role === 'admin')
+        <div style="margin-bottom: 30px; text-align: center;">
+            <a href="{{ route('admin.dashboard') }}" style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); color: white; padding: 15px 35px; text-decoration: none; border-radius: 12px; font-weight: 800; font-size: 16px; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3); transition: transform 0.2s;">
+                <span style="font-size: 20px;">👑</span> SÜPER ADMİN PANELİNE GİT
+            </a>
+        </div>
+    @endif
     
-    @if(Auth::user()->role === 'teacher')
+    @if(Auth::user()->role === 'teacher' || Auth::user()->role === 'admin')
         <div style="background: linear-gradient(135deg, #1e3a8a 0%, #312e81 100%); padding: 40px; border-radius: 20px; color: white; margin-bottom: 40px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 15px 30px rgba(30,58,138,0.2);">
             <div style="max-width: 600px;">
                 <h2 style="margin: 0 0 15px 0; font-size: 28px;">👨‍🏫 Akademisyen Kontrol Paneli</h2>

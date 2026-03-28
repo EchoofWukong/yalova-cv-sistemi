@@ -84,7 +84,7 @@ class CvController extends Controller
     {
         $cv = Cv::with(['egitimler', 'deneyimler'])->findOrFail($id);
 
-        if (Auth::id() !== $cv->user_id && Auth::user()->role !== 'teacher') {
+        if (Auth::id() !== $cv->user_id && Auth::user()->role !== 'teacher' && Auth::user()->role !== 'admin') {
             abort(403, 'Bu özgeçmişi görüntüleme yetkiniz yok.');
         }
 
@@ -178,46 +178,45 @@ class CvController extends Controller
         return redirect()->route('dashboard')->with('success', 'CV başarıyla silindi!');
     }
     
-   public function search(Request $request)
-{
-    $loggedInUser = \Illuminate\Support\Facades\Auth::user();
+    public function search(Request $request)
+    {
+        $loggedInUser = \Illuminate\Support\Facades\Auth::user();
 
-    // 1. AJAX/FETCH İLE (ARAMA KUTUSUNDAN) GELEN İSTEK
-    if ($request->ajax() || $request->wantsJson()) {
-        $query = $request->input('query');
-        
-        $cvs = \App\Models\Cv::with('user')
-            ->whereHas('user', function($q) use ($query, $loggedInUser) {
-                // Sadece onaylı öğrenciler
-                $q->where('role', 'student')
-                  ->where('is_approved', true);
+        // 1. AJAX/FETCH İLE (ARAMA KUTUSUNDAN) GELEN İSTEK
+        if ($request->ajax() || $request->wantsJson()) {
+            $query = $request->input('query');
+            
+            $cvs = \App\Models\Cv::with('user')
+                ->whereHas('user', function($q) use ($query, $loggedInUser) {
+                    // Sadece onaylı öğrenciler
+                    $q->where('role', 'student')
+                      ->where('is_approved', true);
 
-                // BÖLÜM KİLİDİ: Yönetim değilse, sadece kendi bölümündekileri gör
-                if ($loggedInUser && $loggedInUser->department !== 'Çınarcık MYO (Yönetim)') {
-                    $q->where('department', $loggedInUser->department);
-                }
+                    // BÖLÜM KİLİDİ: Kullanıcı "Admin" DEĞİLSE ve "Yönetim" DEĞİLSE sadece kendi bölümünü görsün!
+                    if ($loggedInUser && $loggedInUser->role !== 'admin' && $loggedInUser->department !== 'Çınarcık MYO (Yönetim)') {
+                        $q->where('department', $loggedInUser->department);
+                    }
 
-                // EĞER ARAMA KUTUSUNA YAZI YAZILDIYSA FİLTRELE
-                if ($query) {
-                    $q->whereRaw('LOWER(name) LIKE ?', ['%' . mb_strtolower(trim($query), 'UTF-8') . '%']);
-                }
-            })
-            ->get();
+                    // EĞER ARAMA KUTUSUNA YAZI YAZILDIYSA FİLTRELE
+                    if ($query) {
+                        $q->whereRaw('LOWER(name) LIKE ?', ['%' . mb_strtolower(trim($query), 'UTF-8') . '%']);
+                    }
+                })
+                ->get();
 
-        $results = $cvs->map(function($cv) {
-            return [
-                'id' => $cv->id,
-                'ad_soyad' => $cv->user->name ?? 'İsimsiz', 
-                'sablon' => $cv->sablon ?? 'modern', 
-                'updated_at' => $cv->updated_at ? $cv->updated_at->toIso8601String() : null,
-            ];
-        });
+            $results = $cvs->map(function($cv) {
+                return [
+                    'id' => $cv->id,
+                    'ad_soyad' => $cv->user->name ?? 'İsimsiz', 
+                    'sablon' => $cv->sablon ?? 'modern', 
+                    'updated_at' => $cv->updated_at ? $cv->updated_at->toIso8601String() : null,
+                ];
+            });
 
-        return response()->json($results);
+            return response()->json($results);
+        }
+
+        // 2. SAYFAYA DİREKT (NORMAL) GİRİŞ
+        return view('cv.search'); // (veya sadece 'search', dosya adına göre)
     }
-
-    // 2. SAYFAYA DİREKT (NORMAL) GİRİŞ
-    // Bu kısmı değiştirdik: Sayfa açılırken de dataları View'a gönderiyoruz (JS onu çekecek)
-    return view('cv.search'); // (veya sadece 'search', dosya adına göre)
-}
 }
