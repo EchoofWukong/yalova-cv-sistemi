@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Models\Cv;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\URL;
+use App\Http\Controllers\AdminController;
 // --- SÜPER ADMİN ROTALARI ---
     Route::get('/yonetici-paneli', [AdminController::class, 'index'])->name('admin.dashboard');
     Route::post('/yonetici-paneli/onayla/{id}', [AdminController::class, 'approveTeacher'])->name('admin.approve');
