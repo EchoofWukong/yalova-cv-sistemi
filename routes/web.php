@@ -7,28 +7,28 @@ use App\Models\Cv;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\URL;
 use App\Http\Controllers\AdminController;
-// --- SÜPER ADMİN ROTALARI ---
-    Route::get('/yonetici-paneli', [AdminController::class, 'index'])->name('admin.dashboard');
-    Route::post('/yonetici-paneli/onayla/{id}', [AdminController::class, 'approveTeacher'])->name('admin.approve');
-    Route::delete('/yonetici-paneli/sil/{id}', [AdminController::class, 'deleteUser'])->name('admin.delete');
+
 // ANA SAYFAYI LOGINE YÖNLENDİR
 Route::redirect('/', '/login');
 
 // =========================================================================
-// AKADEMİSYEN ONAYLAMA ROTASI (SENİN İSTEDİĞİN KRİTİK KISIM)
+// AKADEMİSYEN ONAYLAMA ROTASI (MAİL İLE TIKLANAN LİNK)
 // =========================================================================
 Route::get('/admin/akademisyen-onayla/{id}', function ($id) {
     $user = \App\Models\User::findOrFail($id);
     
-    // Hesabı onaylıyoruz
+    // Hesabı onaylıyoruz ve E-postasını otomatik doğruluyoruz
     $user->is_approved = true;
+    if (is_null($user->email_verified_at)) {
+        $user->email_verified_at = now();
+    }
     $user->save(); 
     
     return "
     <div style='font-family:sans-serif; text-align:center; margin-top:50px; padding:20px;'>
         <div style='display:inline-block; border:1px solid #ddd; padding:40px; border-radius:15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);'>
             <h2 style='color: #27ae60;'>✅ İşlem Başarılı!</h2>
-            <p style='font-size:18px;'><b>{$user->name}</b> isimli akademisyen onaylandı.</p>
+            <p style='font-size:18px;'><b>{$user->name}</b> isimli akademisyen onaylandı ve e-postası doğrulandı.</p>
             <p>Artık sisteme giriş yapabilir.</p>
             <br>
             <a href='".url('/login')."' style='padding:12px 25px; background:#2c3e50; color:white; text-decoration:none; border-radius:5px; font-weight:bold;'>Sisteme Git</a>
@@ -51,9 +51,14 @@ Route::get('/hakkinda', function () {
     return view('hakkinda');
 })->middleware(['auth', 'verified'])->name('hakkinda');
 
-// Gruplandırılmış Rotalar
+// Gruplandırılmış Rotalar (SADECE GİRİŞ YAPANLAR İÇİN)
 Route::middleware('auth')->group(function () {
     
+    // --- SÜPER ADMİN ROTALARI --- (GÜVENLİK İÇİN BURAYA ALINDI)
+    Route::get('/yonetici-paneli', [AdminController::class, 'index'])->name('admin.dashboard');
+    Route::post('/yonetici-paneli/onayla/{id}', [AdminController::class, 'approveTeacher'])->name('admin.approve');
+    Route::delete('/yonetici-paneli/sil/{id}', [AdminController::class, 'deleteUser'])->name('admin.delete');
+
     // CV Sistemi Rotaları
     Route::get('/cv/olustur', [CvController::class, 'create'])->name('cv.create');
     Route::post('/cv/kaydet', [CvController::class, 'store'])->name('cv.store');
