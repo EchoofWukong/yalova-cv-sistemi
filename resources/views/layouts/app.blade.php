@@ -9,7 +9,7 @@
             'adres' => 'Yalova Üniversitesi Merkez Kampüsü, Çınarcık Yolu',
             'email' => 'yalova.cv.sistemi@gmail.com',
             'telefon' => '0226 815 50 00',
-            'gelistirici' => 'Gökhan Dönmez'
+            'gelistirici' => 'Gökhan Onmaz'
         ];
         // Dosyayı Türkçe karakter uyumlu ve düzenli (PRETTY_PRINT) formatta kaydet
         file_put_contents($ayarDosyasi, json_encode($varsayilanAyarlar, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
