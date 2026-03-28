@@ -64,6 +64,7 @@
         .btn-view:hover { background: #e53e3e; }
 
         .empty-msg { text-align: center; color: #94a3b8; padding: 60px 0; }
+        .loading { text-align: center; color: #3b82f6; padding: 40px 0; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -78,7 +79,7 @@
     </div>
 
     <div id="results-container">
-        <div class="empty-msg">Öğrenci isminin bir kısmını yazarak başlayın...</div>
+        <div class="loading">Öğrenciler Yükleniyor... ⏳</div>
     </div>
 </div>
 
@@ -87,28 +88,39 @@
     const resultsContainer = document.getElementById('results-container');
     const statusText = document.getElementById('search-status');
 
+    // SAYFA AÇILIR AÇILMAZ TÜM ÖĞRENCİLERİ GETİR
+    window.onload = function() {
+        fetchStudents(''); 
+    };
+
+    // YAZI YAZILDIKÇA (FİLTRELEME İÇİN)
     searchInput.addEventListener('input', function() {
         let query = this.value.trim().toLowerCase();
+        fetchStudents(query);
+    });
 
-        if (query.length < 2) {
-            resultsContainer.innerHTML = '<div class="empty-msg">En az 2 harf yazın...</div>';
-            statusText.innerText = '';
-            return;
-        }
+    // SUNUCUDAN VERİ ÇEKEN VE EKRANA BASAN ANA FONKSİYON
+    function fetchStudents(query) {
+        // Fetch URL'si (Query boşsa hepsini getirir)
+        let url = `{{ route('cv.search') }}?query=${query}`;
 
-        fetch(`{{ route('cv.search') }}?query=${query}`, {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        fetch(url, {
+            headers: { 
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
         })
         .then(response => response.json())
         .then(data => {
-            resultsContainer.innerHTML = '';
+            resultsContainer.innerHTML = ''; // Ekranı temizle
             
             if (data.length === 0) {
                 statusText.innerText = 'Sonuç bulunamadı.';
-                resultsContainer.innerHTML = '<div class="empty-msg">❌ Kayıt bulunamadı.</div>';
+                resultsContainer.innerHTML = '<div class="empty-msg">❌ Öğrenci bulunamadı.</div>';
                 return;
             }
 
+            // Verileri İsme Göre Grupla
             const grouped = {};
             data.forEach(cv => {
                 if (!grouped[cv.ad_soyad]) {
@@ -117,8 +129,9 @@
                 grouped[cv.ad_soyad].push(cv);
             });
 
-            statusText.innerText = `${Object.keys(grouped).length} farklı kişi bulundu.`;
+            statusText.innerText = `${Object.keys(grouped).length} öğrenci listeleniyor.`;
 
+            // Grupları Ekrana Bas (Accordion)
             for (const name in grouped) {
                 const cvs = grouped[name];
                 const groupHtml = `
@@ -145,15 +158,16 @@
                 `;
                 resultsContainer.insertAdjacentHTML('beforeend', groupHtml);
             }
+        })
+        .catch(error => {
+            console.error('Hata:', error);
+            resultsContainer.innerHTML = '<div class="empty-msg">Veriler yüklenirken bir hata oluştu.</div>';
         });
-    });
+    }
 
-    // DAHA SAĞLAM ACCORDION FONKSİYONU
+    // ACCORDION (AÇ/KAPAT) FONKSİYONU
     function toggleAccordion(element) {
-        // Tıklanan header'ın parent'ını (name-group) bul
         const group = element.parentElement;
-        
-        // Bu klasörü aç/kapat (toggle)
         group.classList.toggle('active');
     }
 </script>

@@ -180,20 +180,27 @@ class CvController extends Controller
     
    public function search(Request $request)
 {
-    // EĞER AJAX/FETCH İLE (YANİ ARAMA KUTUSUNDAN) GELMİŞSE SONUÇLARI DÖNDÜR
-    if ($request->ajax() || $request->wantsJson() || $request->has('query')) {
-        
+    $loggedInUser = \Illuminate\Support\Facades\Auth::user();
+
+    // 1. AJAX/FETCH İLE (ARAMA KUTUSUNDAN) GELEN İSTEK
+    if ($request->ajax() || $request->wantsJson()) {
         $query = $request->input('query');
-
-        if (!$query || strlen($query) < 2) {
-            return response()->json([]);
-        }
-
+        
         $cvs = \App\Models\Cv::with('user')
-            ->whereHas('user', function($q) use ($query) {
+            ->whereHas('user', function($q) use ($query, $loggedInUser) {
+                // Sadece onaylı öğrenciler
                 $q->where('role', 'student')
-                  ->where('is_approved', true)
-                  ->whereRaw('LOWER(name) LIKE ?', ['%' . mb_strtolower(trim($query), 'UTF-8') . '%']);
+                  ->where('is_approved', true);
+
+                // BÖLÜM KİLİDİ: Yönetim değilse, sadece kendi bölümündekileri gör
+                if ($loggedInUser && $loggedInUser->department !== 'Çınarcık MYO (Yönetim)') {
+                    $q->where('department', $loggedInUser->department);
+                }
+
+                // EĞER ARAMA KUTUSUNA YAZI YAZILDIYSA FİLTRELE
+                if ($query) {
+                    $q->whereRaw('LOWER(name) LIKE ?', ['%' . mb_strtolower(trim($query), 'UTF-8') . '%']);
+                }
             })
             ->get();
 
@@ -209,7 +216,8 @@ class CvController extends Controller
         return response()->json($results);
     }
 
-    // EĞER SAYFAYA DİREKT GİRMİŞSE TASARIMI (HTML) GÖSTER
-    return view('cv.search'); // Senin o güzel tasarımının olduğu dosya
+    // 2. SAYFAYA DİREKT (NORMAL) GİRİŞ
+    // Bu kısmı değiştirdik: Sayfa açılırken de dataları View'a gönderiyoruz (JS onu çekecek)
+    return view('cv.search'); // (veya sadece 'search', dosya adına göre)
 }
 }
