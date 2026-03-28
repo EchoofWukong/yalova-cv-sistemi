@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Cv;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\File; // Dosya işlemleri için eklendi
+use Illuminate\Support\Facades\File;
 
 class CvController extends Controller
 {
@@ -21,15 +21,11 @@ class CvController extends Controller
             $file = $request->file('profil_fotografi');
             $filename = time() . '_' . preg_replace('/[^A-Za-z0-9.]/', '_', $file->getClientOriginalName());
             
-            // Klasör yolunu belirle
             $path = public_path('uploads');
-
-            // KRİTİK: Klasör yoksa oluştur ve tam yetki (0777) ver
             if (!File::isDirectory($path)) {
                 File::makeDirectory($path, 0777, true, true);
             }
 
-            // Dosyayı taşı
             $file->move($path, $filename);
             $foto_yolu = 'uploads/' . $filename;
         }
@@ -91,19 +87,31 @@ class CvController extends Controller
         return view('cv.detay', compact('cv'));
     }
 
+    // --- ADMİN İÇİN GÜNCELLENEN DÜZENLEME (EDİT) KISMI ---
     public function edit($id)
     {
-        $cv = Cv::with(['egitimler', 'deneyimler'])->where('id', $id)->where('user_id', Auth::id())->firstOrFail();
+        $cv = Cv::with(['egitimler', 'deneyimler'])->findOrFail($id);
+        
+        // Eğer CV'nin sahibi değilse VE Admin de değilse hata ver! (Adminse içeri girer)
+        if ($cv->user_id !== Auth::id() && Auth::user()->role !== 'admin') {
+            abort(403, 'Bu özgeçmişi düzenleme yetkiniz yok.');
+        }
+
         return view('cv.edit', compact('cv'));
     }
 
+    // --- ADMİN İÇİN GÜNCELLENEN KAYDETME (UPDATE) KISMI ---
     public function update(Request $request, $id)
     {
-        $cv = Cv::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
+        $cv = Cv::findOrFail($id);
+
+        // Güvenlik Kilidi (Admin Bypass)
+        if ($cv->user_id !== Auth::id() && Auth::user()->role !== 'admin') {
+            abort(403, 'Bu özgeçmişi güncelleme yetkiniz yok.');
+        }
 
         $foto_yolu = $cv->profil_fotografi;
         if ($request->hasFile('profil_fotografi')) {
-            // Eski fotoğrafı sil
             if($foto_yolu && File::exists(public_path($foto_yolu))) {
                 File::delete(public_path($foto_yolu));
             }
@@ -111,7 +119,6 @@ class CvController extends Controller
             $file = $request->file('profil_fotografi');
             $filename = time() . '_' . preg_replace('/[^A-Za-z0-9.]/', '_', $file->getClientOriginalName());
             
-            // Klasör yolunu belirle ve Render için kontrol et
             $path = public_path('uploads');
             if (!File::isDirectory($path)) {
                 File::makeDirectory($path, 0777, true, true);
@@ -168,36 +175,39 @@ class CvController extends Controller
         return redirect()->route('dashboard')->with('success', 'CV Başarıyla Güncellendi!');
     }
 
+    // --- ADMİN İÇİN GÜNCELLENEN SİLME (DESTROY) KISMI ---
     public function destroy($id)
     {
-        $cv = Cv::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
+        $cv = Cv::findOrFail($id);
+
+        // Güvenlik Kilidi (Admin Bypass)
+        if ($cv->user_id !== Auth::id() && Auth::user()->role !== 'admin') {
+            abort(403, 'Bu özgeçmişi silme yetkiniz yok.');
+        }
+
         if($cv->profil_fotografi && File::exists(public_path($cv->profil_fotografi))) {
             File::delete(public_path($cv->profil_fotografi));
         }
         $cv->delete();
-        return redirect()->route('dashboard')->with('success', 'CV başarıyla silindi!');
+        return redirect()->back()->with('success', 'CV başarıyla silindi!');
     }
     
     public function search(Request $request)
     {
         $loggedInUser = \Illuminate\Support\Facades\Auth::user();
 
-        // 1. AJAX/FETCH İLE (ARAMA KUTUSUNDAN) GELEN İSTEK
         if ($request->ajax() || $request->wantsJson()) {
             $query = $request->input('query');
             
             $cvs = \App\Models\Cv::with('user')
                 ->whereHas('user', function($q) use ($query, $loggedInUser) {
-                    // Sadece onaylı öğrenciler
                     $q->where('role', 'student')
                       ->where('is_approved', true);
 
-                    // BÖLÜM KİLİDİ: Kullanıcı "Admin" DEĞİLSE ve "Yönetim" DEĞİLSE sadece kendi bölümünü görsün!
                     if ($loggedInUser && $loggedInUser->role !== 'admin' && $loggedInUser->department !== 'Çınarcık MYO (Yönetim)') {
                         $q->where('department', $loggedInUser->department);
                     }
 
-                    // EĞER ARAMA KUTUSUNA YAZI YAZILDIYSA FİLTRELE
                     if ($query) {
                         $q->whereRaw('LOWER(name) LIKE ?', ['%' . mb_strtolower(trim($query), 'UTF-8') . '%']);
                     }
@@ -216,7 +226,6 @@ class CvController extends Controller
             return response()->json($results);
         }
 
-        // 2. SAYFAYA DİREKT (NORMAL) GİRİŞ
-        return view('cv.search'); // (veya sadece 'search', dosya adına göre)
+        return view('cv.search'); 
     }
 }
